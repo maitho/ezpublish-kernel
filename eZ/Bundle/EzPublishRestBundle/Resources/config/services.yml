@@ -23,7 +23,6 @@ parameters:
     ezpublish_rest.field_type_serializer.class: eZ\Publish\Core\REST\Common\Output\FieldTypeSerializer
 
     ezpublish_rest.request_listener.class: eZ\Bundle\EzPublishRestBundle\EventListener\RequestListener
-    ezpublish_rest.options_listener.class: eZ\Bundle\EzPublishRestBundle\EventListener\OptionsListener
     ezpublish_rest.csrf_listener.class: eZ\Bundle\EzPublishRestBundle\EventListener\CsrfListener
     ezpublish_rest.response_listener.class: eZ\Bundle\EzPublishRestBundle\EventListener\ResponseListener
 
@@ -203,13 +202,6 @@ services:
             - @ezpublish_rest.output.visitor.dispatcher
         tags:
             - { name: kernel.event_subscriber }
-
-#    ezpublish_rest.options_listener:
-#        class: %ezpublish_rest.options_listener.class%
-#        arguments:
-#            - @router
-#        tags:
-#            - { name: kernel.event_subscriber, priority: 5 }
 
     ezpublish_rest.csrf_listener:
         class: %ezpublish_rest.csrf_listener.class%
