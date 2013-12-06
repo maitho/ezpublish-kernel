@@ -8,17 +8,90 @@
  */
 namespace eZ\Bundle\EzPublishRestBundle\Tests\EventListener;
 
-use eZ\Publish\Core\REST\Server\View\AcceptHeaderVisitorDispatcher;
+use PHPUnit_Framework_MockObject_MockObject;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
-use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
-use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
-use eZ\Bundle\EzPublishRestBundle\EventListener\RequestListener;
-use eZ\Publish\Core\Base\Exceptions\UnauthorizedException;
-use PHPUnit_Framework_TestCase;
+use eZ\Bundle\EzPublishRestBundle\EventListener\OptionsListener;
+use Symfony\Component\Routing\RouterInterface;
 
-class OptionsListenerTest extends PHPUnit_Framework_TestCase
+class OptionsListenerTest extends EventListenerTest
 {
+    protected $requestMethod = 'OPTIONS';
+
+    /** @var PHPUnit_Framework_MockObject_MockObject|RouterInterface */
+    protected $routerMock;
+
+    public function testNotRestRequest()
+    {
+        $this->isRestRequest = false;
+
+        $this->requestMethod = false;
+
+        $this->getEventListener()->onKernelRequest(
+            $this->getResponseEventMock()
+        );
+    }
+
+    /**
+     * @dataProvider getRequestMethods
+     */
+    public function testNotOptionsRequest( $requestMethod )
+    {
+        $this->requestMethod = $requestMethod;
+
+        $this->getEventListener()->onKernelRequest(
+            $this->getResponseEventMock()
+        );
+    }
+
+    public function getRequestMethods()
+    {
+        return array(
+            array( 'GET' ),
+            array( 'HEAD' ),
+            array( 'POST' ),
+            array( 'PUT' ),
+            array( 'DELETE' ),
+            array( 'PATCH' ),
+            array( 'PUBLISH' )
+        );
+    }
+
+    /**
+     * @param bool $csrfEnabled
+     *
+     * @return \eZ\Bundle\EzPublishRestBundle\EventListener\CsrfListener
+     */
+    protected function getEventListener()
+    {
+        return new OptionsListener(
+            $this->getRouterMock()
+        );
+    }
+
+    /**
+     * @return PHPUnit_Framework_MockObject_MockObject|RouterInterface
+     */
+    protected function getRouterMock()
+    {
+        if ( !isset( $this->routerMock ) )
+        {
+            $this->routerMock = $this->getMock( 'Symfony\Component\Routing\RouterInterface' );
+        }
+        return $this->routerMock;
+    }
+
+    /**
+     * @return PHPUnit_Framework_MockObject_MockObject|GetResponseEvent
+     */
+    protected function getResponseEventMock()
+    {
+        if ( !isset( $this->eventMock ) )
+        {
+            $this->eventMock = parent::getEventMock( 'Symfony\Component\HttpKernel\Event\GetResponseEvent' );
+        }
+        return $this->eventMock;
+    }
 }

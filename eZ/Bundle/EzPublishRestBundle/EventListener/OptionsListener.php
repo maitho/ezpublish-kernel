@@ -23,11 +23,6 @@ use Symfony\Component\Routing\RouterInterface;
 class OptionsListener implements EventSubscriberInterface
 {
     /**
-     * @var \Symfony\Component\Form\Extension\Csrf\CsrfProvider\CsrfProviderInterface
-     */
-    private $csrfProvider;
-
-    /**
      * @param $router RouterInterface
      */
     public function __construct( RouterInterface $router )
@@ -54,12 +49,18 @@ class OptionsListener implements EventSubscriberInterface
      */
     public function onKernelRequest( GetResponseEvent $event )
     {
+        if ( !$event->getRequest()->attributes->get( 'is_rest_request' ) )
+            return;
+
         if ( $event->getRequest()->getMethod() != 'OPTIONS' )
         {
             return;
         }
 
         // get the referenced verbs for this route
-        $try = $this->router->match( $event->getRequest()->getPathInfo() );
+        $pathinfo = $event->getRequest()->getPathInfo();
+        $try = $this->router->match(
+            $pathinfo
+        );
     }
 }
