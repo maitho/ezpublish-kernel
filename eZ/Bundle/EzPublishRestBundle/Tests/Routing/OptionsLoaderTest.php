@@ -9,6 +9,7 @@
 namespace eZ\Bundle\EzPublishRestBundle\Tests\Routing;
 
 use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader;
+use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\RouteCollectionMapper;
 use PHPUnit_Framework_MockObject_MockObject;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Routing\Route;
@@ -19,17 +20,6 @@ use Symfony\Component\Routing\RouteCollection;
  */
 class OptionsLoaderTest extends PHPUnit_Framework_TestCase
 {
-    /**
-     * Value returned by the import method of the OptionsLoader mock
-     * @var RouteCollection
-     */
-    protected $importReturnValue;
-
-    public function setUp()
-    {
-        $this->importReturnValue = new RouteCollection();
-    }
-
     /**
      * @param string $type
      * @param bool $expected
@@ -51,60 +41,19 @@ class OptionsLoaderTest extends PHPUnit_Framework_TestCase
         );
     }
 
-    public function testLoadEmptyCollection()
-    {
-        $processedCollection = $this->getOptionsLoader()->load( 'EmptyResource', 'rest_options' );
-        self::assertEquals( 0, $processedCollection->count() );
-    }
-
     public function testLoad()
     {
-        $this->importReturnValue->add(
-            'route1',
-            new Route(
-                '/route/one/{id}',
-                array( '_controller' => 'route_one_get' ),
-                array( 'id' => '[0-9]+' ),
-                array(),
-                '',
-                array(),
-                array( 'GET' )
-            )
+        $optionsRouteCollection = new RouteCollection();
+
+        $this->getRouteCollectionMapperMock()->expects( $this->once() )
+            ->method( 'mapCollection' )
+            ->with( new RouteCollection() )
+            ->will( $this->returnValue( $optionsRouteCollection ) );
+
+        self::assertSame(
+            $optionsRouteCollection,
+            $this->getOptionsLoader()->load( 'resource', 'rest_options' )
         );
-
-        $this->importReturnValue->add(
-            'route1bis',
-            new Route(
-                '/route/one/{id}',
-                array( '_controller' => 'route_two_post' ),
-                array( 'id' => '[0-9]+' ),
-                array(),
-                '',
-                array(),
-                array( 'POST' )
-            )
-        );
-
-        /** @var $processedCollection RouteCollection */
-        $processedCollection = $this->getOptionsLoader()->load( 'EmptyResource', 'rest_options' );
-
-        self::assertEquals( 1, $processedCollection->count() );
-        self::assertNotNull( $processedRoute = $processedCollection->get( 'ezpublish_rest_options_route_one_{id}' ) );
-        self::assertEquals( '/route/one/{id}', $processedRoute->getPath() );
-        self::assertEquals( array( 'OPTIONS' ), $processedRoute->getMethods() );
-        self::assertEquals(
-            array(
-                '_controller' => '_ezpublish_rest.controller.options:getRouteOptions',
-                '_methods' => 'GET,POST'
-            ),
-            $processedRoute->getDefaults()
-        );
-
-        $expectedRequirements = $this->importReturnValue->get( 'route1' )->getRequirements();
-        $processedRequirements = $processedRoute->getRequirements();
-        unset( $expectedRequirements['_method'], $processedRequirements['_method'] );
-
-        self::assertEquals( $expectedRequirements, $processedRequirements );
     }
 
     /**
@@ -114,14 +63,30 @@ class OptionsLoaderTest extends PHPUnit_Framework_TestCase
     protected function getOptionsLoader()
     {
         $mock = $this->getMockBuilder( 'eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader' )
+            ->setConstructorArgs( array( $this->getRouteCollectionMapperMock() ) )
             ->setMethods( array( 'import' ) )
             ->getMock();
 
         $mock->expects( $this->any() )
             ->method( 'import' )
             ->with( $this->anything(), $this->anything() )
-            ->will( $this->returnValue( $this->importReturnValue ) );
+            ->will( $this->returnValue( new RouteCollection() ) );
 
         return $mock;
+    }
+
+    /**
+     * @return PHPUnit_Framework_MockObject_MockObject
+     */
+    protected function getRouteCollectionMapperMock()
+    {
+        if ( !isset( $this->routeCollectionMapperMock ) )
+        {
+            $this->routeCollectionMapperMock = $this->getMockBuilder( 'eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\RouteCollectionMapper' )
+                ->disableOriginalConstructor()
+                ->getMock();
+        }
+
+        return $this->routeCollectionMapperMock;
     }
 }

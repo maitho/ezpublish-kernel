@@ -1,6 +1,7 @@
 parameters:
     ezpublish_rest.routing.options_loader.class: eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader
-    ezpublish_rest.options_routing_loader.mapper.class: eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\Mapper
+    ezpublish_rest.routing.options_loader.route_collection_mapper.class: eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\RouteCollectionMapper
+    ezpublish_rest.routing.options_loader.mapper.class: eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\Mapper
 
     ezpublish_rest.controller.base.class: eZ\Publish\Core\REST\Server\Controller
     ezpublish_rest.controller.binary_content.class: eZ\Publish\Core\REST\Server\Controller\BinaryContent
@@ -64,14 +65,19 @@ parameters:
 
 services:
     ezpublish_rest.routing.options_loader:
-        class: %ezpublish_rest.options_routing_loader.class%
+        class: %ezpublish_rest.routing.options_loader.class%
         arguments:
-            - @ezpublish_rest.routing.options_loader.mapper
+            - @ezpublish_rest.routing.options_loader.route_collection_mapper
         tags:
             - { name: routing.loader }
 
+    ezpublish_rest.routing.options_loader.route_collection_mapper:
+        class: %ezpublish_rest.routing.options_loader.route_collection_mapper.class%
+        arguments:
+            - @ezpublish_rest.routing.options_loader.mapper
+
     ezpublish_rest.routing.options_loader.mapper:
-        class: %ezpublish_rest.options_routing_loader.mapper.class%
+        class: %ezpublish_rest.routing.options_loader.mapper.class%
 
     ezpublish_rest.field_type_serializer:
         class: %ezpublish_rest.field_type_serializer.class%

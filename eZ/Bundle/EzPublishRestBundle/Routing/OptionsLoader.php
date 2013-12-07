@@ -10,8 +10,8 @@ namespace eZ\Bundle\EzPublishRestBundle\Routing;
 
 use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\Mapper;
 use Symfony\Component\Config\Loader\Loader;
-use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\OptionsRouteCollection;
-use Symfony\Component\Routing\Route;
+use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\RouteCollectionMapper;
+use Symfony\Component\Routing\RouteCollection;
 
 /**
  * Goes through all REST routes, and registers new routes for all routes
@@ -19,26 +19,23 @@ use Symfony\Component\Routing\Route;
  */
 class OptionsLoader extends Loader
 {
-    /** @var Mapper */
-    protected $mapper;
+    /** @var RouteCollectionMapperMapper */
+    protected $routeCollectionMapper;
 
-    public function __construct( Mapper $mapper )
+    public function __construct( RouteCollectionMapper $mapper )
     {
-        $this->mapper = $mapper;
+        $this->routeCollectionMapper = $mapper;
     }
 
     /**
      * @param mixed $resource
      * @param string $type
      *
-     * @return OptionsRouteCollection
+     * @return RouteCollection
      */
     public function load( $resource, $type = null )
     {
-        $collection = new OptionsRouteCollection( $this->mapper );
-        $collection->addRestRoutesCollection( $this->import( $resource ) );
-
-        return $collection;
+        return $this->routeCollectionMapper->mapCollection( $this->import( $resource ) );
     }
 
     public function supports( $resource, $type = null )
