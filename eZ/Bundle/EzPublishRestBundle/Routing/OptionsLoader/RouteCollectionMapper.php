@@ -10,7 +10,12 @@ namespace eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader;
 
 use Symfony\Component\Routing\RouteCollection;
 
-class OptionsRouteCollection extends RouteCollection
+/**
+ * Maps a REST routes collection to the corresponding set of REST OPTIONS routes.
+ *
+ * Merges routes with the same path to a unique one, with the aggregate of merged methods in the _methods default.
+ */
+class RouteCollectionMapper
 {
     /**
      * @var Mapper
@@ -23,16 +28,20 @@ class OptionsRouteCollection extends RouteCollection
     }
 
     /**
-     * Iterates $restRoutes, and adds unique, merged OPTIONS rest routes to the collection
-     * @param RouteCollection $collection
+     * Iterates over $restRouteCollection, and returns the corresponding RouteCollection of OPTIONS REST routes
+     *
+     * @param RouteCollection $restRouteCollection
+     * @return RouteCollection
      */
-    public function addRestRoutesCollection( RouteCollection $collection )
+    public function mapCollection( RouteCollection $restRouteCollection )
     {
-        foreach ( $collection->all() as $restRoute )
+        $optionsRouteCollection = new RouteCollection();
+
+        foreach ( $restRouteCollection->all() as $restRoute )
         {
             $optionsRouteName = $this->mapper->getOptionsRouteName( $restRoute );
 
-            $optionsRoute = $this->get( $optionsRouteName );
+            $optionsRoute = $optionsRouteCollection->get( $optionsRouteName );
             if ( $optionsRoute === null )
             {
                 $optionsRoute = $this->mapper->mapRoute( $restRoute );
@@ -42,7 +51,9 @@ class OptionsRouteCollection extends RouteCollection
                 $optionsRoute = $this->mapper->mergeMethodsDefault( $restRoute, $optionsRoute );
             }
 
-            $this->add( $optionsRouteName, $optionsRoute );
+            $optionsRouteCollection->add( $optionsRouteName, $optionsRoute );
         }
+
+        return $optionsRouteCollection;
     }
 }

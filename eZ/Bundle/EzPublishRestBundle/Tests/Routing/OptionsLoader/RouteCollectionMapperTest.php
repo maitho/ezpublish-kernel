@@ -8,8 +8,8 @@
  */
 namespace eZ\Bundle\EzPublishRestBundle\Tests\Routing\OptionsLoader;
 
-use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\OptionsRouteCollection;
 use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\Mapper;
+use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\RouteCollectionMapper;
 use PHPUnit_Framework_TestCase;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
@@ -17,14 +17,14 @@ use Symfony\Component\Routing\RouteCollection;
 /**
  * @covers eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\OptionsRouteCollection
  */
-class OptionsRouteCollectionTest extends PHPUnit_Framework_TestCase
+class RouteCollectionMapperTest extends PHPUnit_Framework_TestCase
 {
-    /** @var OptionsRouteCollection */
-    protected $optionsRouteCollection;
+    /** @var RouteCollectionMapper */
+    protected $collectionMapper;
 
     public function setUp()
     {
-        $this->optionsRouteCollection = new OptionsRouteCollection(
+        $this->collectionMapper = new RouteCollectionMapper(
             new Mapper()
         );
     }
@@ -36,31 +36,31 @@ class OptionsRouteCollectionTest extends PHPUnit_Framework_TestCase
         $restRoutesCollection->add( 'ezpublish_rest_route_one_post', $this->createRoute( '/route/one', array( 'POST' ) ) );
         $restRoutesCollection->add( 'ezpublish_rest_route_two_delete', $this->createRoute( '/route/two', array( 'DELETE' ) ) );
 
-        $this->optionsRouteCollection->addRestRoutesCollection( $restRoutesCollection );
+        $optionsRouteCollection = $this->collectionMapper->mapCollection( $restRoutesCollection );
 
         self::assertEquals(
             2,
-            $this->optionsRouteCollection->count()
+            $optionsRouteCollection->count()
         );
 
         self::assertInstanceOf(
             'Symfony\Component\Routing\Route',
-            $this->optionsRouteCollection->get( 'ezpublish_rest_options_route_one' )
+            $optionsRouteCollection->get( 'ezpublish_rest_options_route_one' )
         );
 
         self::assertInstanceOf(
             'Symfony\Component\Routing\Route',
-            $this->optionsRouteCollection->get( 'ezpublish_rest_options_route_two' )
+            $optionsRouteCollection->get( 'ezpublish_rest_options_route_two' )
         );
 
         self::assertEquals(
             'GET,POST',
-            $this->optionsRouteCollection->get( 'ezpublish_rest_options_route_one' )->getDefault( '_methods' )
+            $optionsRouteCollection->get( 'ezpublish_rest_options_route_one' )->getDefault( '_methods' )
         );
 
         self::assertEquals(
             'DELETE',
-            $this->optionsRouteCollection->get( 'ezpublish_rest_options_route_two' )->getDefault( '_methods' )
+            $optionsRouteCollection->get( 'ezpublish_rest_options_route_two' )->getDefault( '_methods' )
         );
     }
 
