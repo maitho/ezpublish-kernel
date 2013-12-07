@@ -23,10 +23,8 @@ class OptionsLoader extends Loader
         $collection = new RouteCollection();
 
         /** @var RouteCollection $importedRoute */
-        $importedRoutes = $this->import(
-            '@EzPublishRestBundle/Resources/config/routing.yml',
-            'yaml'
-        );
+        $importedRoutes = $this->import( $resource );
+
         /** @var Route $route */
         foreach ( $importedRoutes->all() as $route )
         {
