@@ -34,12 +34,17 @@ class MapperTest extends PHPUnit_Framework_TestCase
 
     public function testMergeMethodsDefault()
     {
-        $restRoute = new Route( '', array( '_methods' => 'PUT,DELETE' ) );
-        $optionsRoute = new Route( '', array(), array(), array(), '', array(), array( 'GET,POST' ) );
+        $optionsRoute = new Route( '', array( '_methods' => 'PUT,DELETE' ) );
+        $restRoute = new Route( '', array(), array(), array(), '', array(), array( 'GET', 'POST' ) );
 
+        $mergedOptionsRoute = $this->mapper->mergeMethodsDefault( $optionsRoute, $restRoute );
         self::assertEquals(
             'PUT,DELETE,GET,POST',
-            $this->mapper->mergeMethodsDefault( $optionsRoute, $restRoute )->getDefault( '_methods' )
+            $mergedOptionsRoute->getDefault( '_methods' )
+        );
+        self::assertEquals(
+            $optionsRoute->getMethods(),
+            $mergedOptionsRoute->getMethods()
         );
     }
 

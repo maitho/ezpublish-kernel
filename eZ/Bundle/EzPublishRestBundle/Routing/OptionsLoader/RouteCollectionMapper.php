@@ -48,7 +48,7 @@ class RouteCollectionMapper
             }
             else
             {
-                $optionsRoute = $this->mapper->mergeMethodsDefault( $restRoute, $optionsRoute );
+                $optionsRoute = $this->mapper->mergeMethodsDefault( $optionsRoute, $restRoute );
             }
 
             $optionsRouteCollection->add( $optionsRouteName, $optionsRoute );
