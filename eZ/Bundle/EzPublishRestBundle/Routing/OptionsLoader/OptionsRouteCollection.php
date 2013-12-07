@@ -32,14 +32,14 @@ class OptionsRouteCollection extends RouteCollection
         {
             $optionsRouteName = $this->mapper->getOptionsRouteName( $restRoute );
 
-            $optionsRoute = $collection->get( $optionsRouteName );
+            $optionsRoute = $this->get( $optionsRouteName );
             if ( $optionsRoute === null )
             {
                 $optionsRoute = $this->mapper->mapRoute( $restRoute );
             }
             else
             {
-                $this->mapper->mergeMethodsDefault( $restRoute, $optionsRoute );
+                $optionsRoute = $this->mapper->mergeMethodsDefault( $restRoute, $optionsRoute );
             }
 
             $this->add( $optionsRouteName, $optionsRoute );
