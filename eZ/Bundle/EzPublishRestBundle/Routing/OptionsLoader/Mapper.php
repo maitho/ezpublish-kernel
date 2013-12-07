@@ -44,7 +44,8 @@ class Mapper
      */
     public function mergeMethodsDefault( Route $restRoute, Route $optionsRoute )
     {
-        $optionsRoute->setDefault(
+        $mergedRoute = clone( $restRoute );
+        $mergedRoute->setDefault(
             '_methods',
             implode(
                 ',',
@@ -56,6 +57,8 @@ class Mapper
                 )
             )
         );
+
+        return $mergedRoute;
     }
 
     /**
