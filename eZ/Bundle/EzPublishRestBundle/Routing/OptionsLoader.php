@@ -8,8 +8,9 @@
  */
 namespace eZ\Bundle\EzPublishRestBundle\Routing;
 
+use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\Mapper;
 use Symfony\Component\Config\Loader\Loader;
-use Symfony\Component\Routing\RouteCollection;
+use eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader\OptionsRouteCollection;
 use Symfony\Component\Routing\Route;
 
 /**
@@ -18,49 +19,24 @@ use Symfony\Component\Routing\Route;
  */
 class OptionsLoader extends Loader
 {
+    /** @var Mapper */
+    protected $mapper;
+
+    public function __construct( Mapper $mapper )
+    {
+        $this->mapper = $mapper;
+    }
+
     /**
      * @param mixed $resource
      * @param string $type
      *
-     * @return RouteCollection
+     * @return OptionsRouteCollection
      */
     public function load( $resource, $type = null )
     {
-        $collection = new RouteCollection();
-
-        /** @var RouteCollection $importedRoute */
-        $importedRoutes = $this->import( $resource );
-
-        /** @var Route $route */
-        foreach ( $importedRoutes->all() as $route )
-        {
-            $optionsRouteName = $this->getOptionsRouteName( $route );
-            $optionsRoute = $collection->get( $optionsRouteName );
-
-            if ( $optionsRoute === null )
-            {
-                $optionsRoute = clone( $route );
-                $optionsRoute->setMethods( array( 'OPTIONS' ) );
-                $optionsRoute->setDefault(
-                    '_controller',
-                    '_ezpublish_rest.controller.options:getRouteOptions'
-                );
-
-                $optionsRoute->setDefault(
-                    '_methods',
-                    implode( ',', $route->getMethods() )
-                );
-            }
-            else
-            {
-                $optionsRoute->setDefault(
-                    '_methods',
-                    $optionsRoute->getDefault( '_methods' ) . ',' . implode( ',', $route->getMethods() )
-                );
-            }
-
-            $collection->add( $optionsRouteName, $optionsRoute );
-        }
+        $collection = new OptionsRouteCollection( $this->mapper );
+        $collection->addRestRoutesCollection( $this->import( $resource ) );
 
         return $collection;
     }
@@ -68,16 +44,5 @@ class OptionsLoader extends Loader
     public function supports( $resource, $type = null )
     {
         return $type === 'rest_options';
-    }
-
-    /**
-     * Returns the OPTIONS name of a REST route
-     * @param $route Route
-     * @return string
-     */
-    protected function getOptionsRouteName( Route $route )
-    {
-        $name = str_replace( '/', '_', $route->getPath() );
-        return 'ezpublish_rest_options_' . trim( $name, '_' );
     }
 }

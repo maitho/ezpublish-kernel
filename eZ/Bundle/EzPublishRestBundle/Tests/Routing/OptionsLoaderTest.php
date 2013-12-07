@@ -14,6 +14,9 @@ use PHPUnit_Framework_TestCase;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouteCollection;
 
+/**
+ * @covers \eZ\Bundle\EzPublishRestBundle\Routing\OptionsLoader
+ */
 class OptionsLoaderTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -25,6 +28,27 @@ class OptionsLoaderTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->importReturnValue = new RouteCollection();
+    }
+
+    /**
+     * @param string $type
+     * @param bool $expected
+     * @dataProvider getResourceType
+     */
+    public function testSupportsResourceType( $type, $expected )
+    {
+        self::assertEquals(
+            $expected,
+            $this->getOptionsLoader()->supports( null, $type )
+        );
+    }
+
+    public function getResourceType()
+    {
+        return array(
+            array( 'rest_options', true ),
+            array( 'something else', false )
+        );
     }
 
     public function testLoadEmptyCollection()
