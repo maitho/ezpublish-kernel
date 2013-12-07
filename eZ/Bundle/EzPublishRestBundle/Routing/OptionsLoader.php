@@ -18,6 +18,12 @@ use Symfony\Component\Routing\Route;
  */
 class OptionsLoader extends Loader
 {
+    /**
+     * @param mixed $resource
+     * @param string $type
+     *
+     * @return RouteCollection
+     */
     public function load( $resource, $type = null )
     {
         $collection = new RouteCollection();
